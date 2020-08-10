@@ -1,5 +1,5 @@
 # claim_itch
-Automate claiming itch.io games
+Automate claiming itch.io games. The script scans sources like reddit megathreads for game URLs then claims them.
 
 ## Installation
 Windows instructions, you can adapt them for linux/mac as pointed out by /u/farmerbb:
