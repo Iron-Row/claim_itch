@@ -119,7 +119,11 @@ def extract_from_itch_group(group_page):
     OUTPUT urls of all games, urls of games that avie noted is connected to more sales
     '''
     soup = BeautifulSoup(group_page, 'lxml')
+    ended = soup.find_all('div', class_ = 'not_active_notification')
     urls, more = set(), set()
+    if ended:
+        print(" Sale ended")
+        return urls, more
     games = soup.find_all('div', class_='game_cell')
     for game in games:
         url = game.find('a').get('href')
