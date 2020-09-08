@@ -342,10 +342,12 @@ def claim(url, driver):
         raise ParsingError(url)
 
 
-def create_driver(enable_images=False):
+def create_driver(enable_images=False, mute=False):
     options = webdriver.firefox.options.Options()
     if not enable_images:
         options.set_preference('permissions.default.image', 2)
+    if mute:
+        options.set_preference('media.volume_scale', '0.0')
     if os.path.exists('geckodriver.exe'):
         driver = webdriver.Firefox(options=options, executable_path='geckodriver.exe')
     else:
@@ -479,6 +481,7 @@ def main():
     arg_parser.add_argument('--recheck', action='store_true', help='reload game links from SOURCES')
     arg_parser.add_argument('--recheck-groups', action='store_true', help='reload game links from discovered itch collections / sales')
     arg_parser.add_argument('--enable-images', action='store_true', help='load images in the browser while claiming games')
+    arg_parser.add_argument('--mute', action='store_true', help='automatically mute while claiming games')
     arg_parser.add_argument('--ignore', action='store_true', help='continue even if an error occurs when handling a game')
     args = arg_parser.parse_args()
 
@@ -530,7 +533,7 @@ def main():
         ignore = set().union(*map(history.get, PROCESSED_GAMES))
         valid = history['urls'].difference(ignore)
         if len(valid) > 0:
-            with create_driver(args.enable_images) as driver:
+            with create_driver(args.enable_images, args.mute) as driver:
                 driver.get('https://itch.io/login')
                 # manually log in
                 input('A new Firefox window was opened. Log in to itch then click enter to continue')
