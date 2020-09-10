@@ -490,6 +490,7 @@ def main():
     arg_parser.add_argument('--enable-images', action='store_true', help='load images in the browser while claiming games')
     arg_parser.add_argument('--mute', action='store_true', help='automatically mute while claiming games')
     arg_parser.add_argument('--ignore', action='store_true', help='continue even if an error occurs when handling a game')
+    arg_parser.add_argument('--skip-errors', action='store_true', help='do not retry games that caused an error previously')
     args = arg_parser.parse_args()
 
     if args.history_file is not None:
@@ -538,6 +539,8 @@ def main():
     sleep_time = 15
     try:
         ignore = set().union(*map(history.get, PROCESSED_GAMES))
+        if args.skip_errors:
+            ignore.update(history['error'])
         valid = history['urls'].difference(ignore)
         if len(valid) > 0:
             with create_driver(args.enable_images, args.mute) as driver:
