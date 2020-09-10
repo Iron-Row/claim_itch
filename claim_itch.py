@@ -1,5 +1,5 @@
 '''
-ClaimItch/0.11
+ClaimItch/0.12
 
 requirements:
 - python (tested on 3.8)
@@ -87,7 +87,7 @@ PATTERNS = {
 }
 
 
-USER_AGENT = 'ClaimItch/0.11'
+USER_AGENT = 'ClaimItch/0.12'
 
 
 HISTORY_KEYS = [
