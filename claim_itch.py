@@ -208,6 +208,29 @@ def get_from_reddit_thread(url, sleep_time=15):
     print(f' got {len(urls)} games | {len(has_more)} collections/sales')
     return urls, has_more
 
+def get_owned_keys(sleep_time = 15):
+    page = 1
+    urls = set()
+    while True:
+        print(f' getting page {page}')
+        params = {'page': page}
+        res = session.get("https://api.itch.io/profile/owned-keys", params=params)
+        if res.status_code == 404:
+            break
+        elif res.status_code != 200:
+            # breakpoint()
+            res.raise_for_status()
+        data = res.json()
+        if len(data['owned_keys']) == 0:
+            break
+        page += 1
+        for item in data['owned_keys']:
+            game = item['game']
+            urls.add(game['url'])
+        print(f' sleeping for {sleep_time}s')
+        sleep(sleep_time)
+    print(f' already owned {len(urls)} games')
+    return urls
 
 def get_urls(url, sleep_time=15, max_page=None):
     global PATTERNS
@@ -511,6 +534,11 @@ def main():
     session = requests.Session()
     for cookie in cookies:
         session.cookies.set(cookie['name'], cookie['value'])
+
+    # check already owned keys
+    owned_keys = get_owned_keys()
+    for key in owned_keys:
+        history['claimed'].add(key)
 
     # getting game links
     itch_groups = set(filter(re.compile(PATTERNS['itch_group']).match, history['has_more']))
