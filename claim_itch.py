@@ -538,6 +538,7 @@ def main():
         valid = history['urls'].difference(ignore)
         if len(valid) > 0:
             with create_driver(args.enable_images, args.mute) as driver:
+                driver.get('https://itch.io/login')
                 # manually log in
                 input('A new Firefox window was opened. Log in to itch then click enter to continue')
                 for i, url in enumerate(valid):
