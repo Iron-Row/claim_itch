@@ -211,6 +211,29 @@ def get_from_reddit_thread(url, sleep_time=15):
     print(f' got {len(urls)} games | {len(has_more)} collections/sales')
     return urls, has_more
 
+def get_owned_keys(sleep_time = 15):
+    page = 1
+    urls = set()
+    while True:
+        print(f' getting page {page}')
+        params = {'page': page}
+        res = session.get("https://api.itch.io/profile/owned-keys", params=params)
+        if res.status_code == 404:
+            break
+        elif res.status_code != 200:
+            # breakpoint()
+            res.raise_for_status()
+        data = res.json()
+        if len(data['owned_keys']) == 0:
+            break
+        page += 1
+        for item in data['owned_keys']:
+            game = item['game']
+            urls.add(game['url'])
+        print(f' sleeping for {sleep_time}s')
+        sleep(sleep_time)
+    print(f' already owned {len(urls)} games')
+    return urls
 
 def get_urls(url, sleep_time=15, max_page=None):
     global PATTERNS
@@ -505,11 +528,29 @@ def main():
         print_summary(history_file, history)
         sys.exit(0)
 
+    # establish itch session cookies
+    cookies = []
+    with create_driver(args.enable_images, args.mute) as driver:
+        driver.get('https://itch.io/login')
+        input('A new Firefox window was opened. Log in to itch then click enter to continue')
+        cookies = driver.get_cookies()
+    global session
+    session = requests.Session()
+    for cookie in cookies:
+        session.cookies.set(cookie['name'], cookie['value'])
+
+
     # getting game links
     itch_groups = set(filter(re.compile(PATTERNS['itch_group']).match, history['has_more']))
     check_sources = not os.path.exists(history_file) or args.recheck
     check_groups = len(itch_groups) > 0 or args.recheck_groups
     if check_sources or check_groups:
+        print('getting existing library')
+        # check already owned keys
+        owned_keys = get_owned_keys()
+        for key in owned_keys:
+            history['claimed'].add(key)
+
         print('will reload game urls from the internet')
         # keep getting newly discovered sales/collections
         first_pass = True
@@ -544,9 +585,9 @@ def main():
         valid = history['urls'].difference(ignore)
         if len(valid) > 0:
             with create_driver(args.enable_images, args.mute) as driver:
-                driver.get('https://itch.io/login')
-                # manually log in
-                input('A new Firefox window was opened. Log in to itch then click enter to continue')
+                driver.get('https://itch.io/')
+                for cookie in cookies:
+                    driver.add_cookie(cookie)
                 for i, url in enumerate(valid):
                     print(f"{i+1}/{len(valid)} ({len(history['urls'])})")
                     if url not in ignore:
