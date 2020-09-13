@@ -535,16 +535,18 @@ def main():
     for cookie in cookies:
         session.cookies.set(cookie['name'], cookie['value'])
 
-    # check already owned keys
-    owned_keys = get_owned_keys()
-    for key in owned_keys:
-        history['claimed'].add(key)
 
     # getting game links
     itch_groups = set(filter(re.compile(PATTERNS['itch_group']).match, history['has_more']))
     check_sources = not os.path.exists(history_file) or args.recheck
     check_groups = len(itch_groups) > 0 or args.recheck_groups
     if check_sources or check_groups:
+        print('getting existing library')
+        # check already owned keys
+        owned_keys = get_owned_keys()
+        for key in owned_keys:
+            history['claimed'].add(key)
+
         print('will reload game urls from the internet')
         # keep getting newly discovered sales/collections
         first_pass = True
