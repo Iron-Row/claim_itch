@@ -1,5 +1,5 @@
 '''
-ClaimItch/0.11
+ClaimItch/0.12
 
 requirements:
 - python (tested on 3.8)
@@ -60,18 +60,21 @@ from selenium.common.exceptions import NoSuchElementException
 
 # add any itch sale/collection or reddit thread to this set
 SOURCES = {
-    'https://itch.io/c/757294/games-to-help-you-stay-inside',
-    'https://itch.io/c/759545/self-isolation-on-a-budget',
-    'https://old.reddit.com/r/FreeGameFindings/comments/fka4be/itchio_mega_thread/',
-    'https://old.reddit.com/r/GameDeals/comments/fkq5c3/itchio_a_collecting_compiling_almost_every_single',
-    'https://itch.io/c/537762/already-claimed-will-be-on-sale-again',
-    'https://old.reddit.com/r/FreeGameFindings/comments/fxhotl/itchio_mega_thread/',
-    'https://old.reddit.com/r/FreeGameFindings/comments/gbcjdn/itchio_mega_thread_3/',
-    'https://old.reddit.com/r/FreeGameFindings/comments/gkz20p/itchio_mega_thread_4/',
-    'https://old.reddit.com/r/FreeGameFindings/comments/hbkz5o/itchio_mega_thread_5/',
-    'https://old.reddit.com/r/FreeGameFindings/comments/hqjptv/itchio_mega_thread_6/',
+    ## Not updated recently
+    #'https://itch.io/c/757294/games-to-help-you-stay-inside',
+    #'https://itch.io/c/759545/self-isolation-on-a-budget',
+    #'https://itch.io/c/840421/paid-gone-free-sales',
+    #'https://old.reddit.com/r/GameDeals/comments/fkq5c3/itchio_a_collecting_compiling_almost_every_single',
+    #'https://old.reddit.com/r/FreeGameFindings/comments/fka4be/itchio_mega_thread/',
+    #'https://old.reddit.com/r/FreeGameFindings/comments/fxhotl/itchio_mega_thread/',
+    #'https://old.reddit.com/r/FreeGameFindings/comments/gbcjdn/itchio_mega_thread_3/',
+    #'https://old.reddit.com/r/FreeGameFindings/comments/gkz20p/itchio_mega_thread_4/',
+    #'https://old.reddit.com/r/FreeGameFindings/comments/hbkz5o/itchio_mega_thread_5/',
+    #'https://old.reddit.com/r/FreeGameFindings/comments/hqjptv/itchio_mega_thread_6/',
+    ## Disabled because it take a long time
+    #'https://itch.io/c/537762/already-claimed-will-be-on-sale-again',
     'https://old.reddit.com/r/FreeGameFindings/comments/i4ywei/itchio_mega_thread_7/',
-    'https://itch.io/c/840421/paid-gone-free-sales',
+    'https://old.reddit.com/r/FreeGameFindings/comments/ipp4xn/itchio_mega_thread_8/',
 }
 
 
@@ -84,7 +87,7 @@ PATTERNS = {
 }
 
 
-USER_AGENT = 'ClaimItch/0.11'
+USER_AGENT = 'ClaimItch/0.12'
 
 
 HISTORY_KEYS = [
@@ -487,6 +490,7 @@ def main():
     arg_parser.add_argument('--enable-images', action='store_true', help='load images in the browser while claiming games')
     arg_parser.add_argument('--mute', action='store_true', help='automatically mute while claiming games')
     arg_parser.add_argument('--ignore', action='store_true', help='continue even if an error occurs when handling a game')
+    arg_parser.add_argument('--skip-errors', action='store_true', help='do not retry games that caused an error previously')
     args = arg_parser.parse_args()
 
     if args.history_file is not None:
@@ -535,6 +539,8 @@ def main():
     sleep_time = 15
     try:
         ignore = set().union(*map(history.get, PROCESSED_GAMES))
+        if args.skip_errors:
+            ignore.update(history['error'])
         valid = history['urls'].difference(ignore)
         if len(valid) > 0:
             with create_driver(args.enable_images, args.mute) as driver:
