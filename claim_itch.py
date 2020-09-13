@@ -61,17 +61,17 @@ from selenium.common.exceptions import NoSuchElementException
 # add any itch sale/collection or reddit thread to this set
 SOURCES = {
     'https://itch.io/c/757294/games-to-help-you-stay-inside',
-    'https://itch.io/c/759545/self-isolation-on-a-budget',
-    'https://old.reddit.com/r/FreeGameFindings/comments/fka4be/itchio_mega_thread/',
-    'https://old.reddit.com/r/GameDeals/comments/fkq5c3/itchio_a_collecting_compiling_almost_every_single',
-    'https://itch.io/c/537762/already-claimed-will-be-on-sale-again',
-    'https://old.reddit.com/r/FreeGameFindings/comments/fxhotl/itchio_mega_thread/',
-    'https://old.reddit.com/r/FreeGameFindings/comments/gbcjdn/itchio_mega_thread_3/',
-    'https://old.reddit.com/r/FreeGameFindings/comments/gkz20p/itchio_mega_thread_4/',
-    'https://old.reddit.com/r/FreeGameFindings/comments/hbkz5o/itchio_mega_thread_5/',
-    'https://old.reddit.com/r/FreeGameFindings/comments/hqjptv/itchio_mega_thread_6/',
-    'https://old.reddit.com/r/FreeGameFindings/comments/i4ywei/itchio_mega_thread_7/',
-    'https://itch.io/c/840421/paid-gone-free-sales',
+    # 'https://itch.io/c/759545/self-isolation-on-a-budget',
+    # 'https://old.reddit.com/r/FreeGameFindings/comments/fka4be/itchio_mega_thread/',
+    # 'https://old.reddit.com/r/GameDeals/comments/fkq5c3/itchio_a_collecting_compiling_almost_every_single',
+    # 'https://itch.io/c/537762/already-claimed-will-be-on-sale-again',
+    # 'https://old.reddit.com/r/FreeGameFindings/comments/fxhotl/itchio_mega_thread/',
+    # 'https://old.reddit.com/r/FreeGameFindings/comments/gbcjdn/itchio_mega_thread_3/',
+    # 'https://old.reddit.com/r/FreeGameFindings/comments/gkz20p/itchio_mega_thread_4/',
+    # 'https://old.reddit.com/r/FreeGameFindings/comments/hbkz5o/itchio_mega_thread_5/',
+    # 'https://old.reddit.com/r/FreeGameFindings/comments/hqjptv/itchio_mega_thread_6/',
+    # 'https://old.reddit.com/r/FreeGameFindings/comments/i4ywei/itchio_mega_thread_7/',
+    # 'https://itch.io/c/840421/paid-gone-free-sales',
 }
 
 
@@ -501,6 +501,17 @@ def main():
         print_summary(history_file, history)
         sys.exit(0)
 
+    # establish itch session cookies
+    cookies = []
+    with create_driver(args.enable_images, args.mute) as driver:
+        driver.get('https://itch.io/login')
+        input('A new Firefox window was opened. Log in to itch then click enter to continue')
+        cookies = driver.get_cookies()
+    global session
+    session = requests.Session()
+    for cookie in cookies:
+        session.cookies.set(cookie['name'], cookie['value'])
+
     # getting game links
     itch_groups = set(filter(re.compile(PATTERNS['itch_group']).match, history['has_more']))
     check_sources = not os.path.exists(history_file) or args.recheck
@@ -538,9 +549,9 @@ def main():
         valid = history['urls'].difference(ignore)
         if len(valid) > 0:
             with create_driver(args.enable_images, args.mute) as driver:
-                driver.get('https://itch.io/login')
-                # manually log in
-                input('A new Firefox window was opened. Log in to itch then click enter to continue')
+                driver.get('https://itch.io/')
+                for cookie in cookies:
+                    driver.add_cookie(cookie)
                 for i, url in enumerate(valid):
                     print(f"{i+1}/{len(valid)} ({len(history['urls'])})")
                     if url not in ignore:
