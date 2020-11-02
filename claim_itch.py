@@ -72,7 +72,11 @@ SOURCES = {
     #'https://old.reddit.com/r/FreeGameFindings/comments/hbkz5o/itchio_mega_thread_5/',
     #'https://old.reddit.com/r/FreeGameFindings/comments/hqjptv/itchio_mega_thread_6/',
     ## Disabled because it take a long time
+<<<<<<< HEAD
     #'https://itch.io/c/537762/already-claimed-will-be-on-sale-again',
+=======
+    # 'https://itch.io/c/537762/already-claimed-will-be-on-sale-again',
+>>>>>>> d48f76cca576c7b86d39655cf716aefb515601ad
     'https://old.reddit.com/r/FreeGameFindings/comments/i4ywei/itchio_mega_thread_7/',
     'https://old.reddit.com/r/FreeGameFindings/comments/ipp4xn/itchio_mega_thread_8/',
 }
