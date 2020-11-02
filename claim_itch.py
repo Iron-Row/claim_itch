@@ -72,7 +72,7 @@ SOURCES = {
     #'https://old.reddit.com/r/FreeGameFindings/comments/hbkz5o/itchio_mega_thread_5/',
     #'https://old.reddit.com/r/FreeGameFindings/comments/hqjptv/itchio_mega_thread_6/',
     ## Disabled because it take a long time
-    #'https://itch.io/c/537762/already-claimed-will-be-on-sale-again',
+    'https://itch.io/c/537762/already-claimed-will-be-on-sale-again',
     'https://old.reddit.com/r/FreeGameFindings/comments/i4ywei/itchio_mega_thread_7/',
     'https://old.reddit.com/r/FreeGameFindings/comments/ipp4xn/itchio_mega_thread_8/',
 }
@@ -124,6 +124,13 @@ def extract_from_itch_group(group_page):
     soup = BeautifulSoup(group_page, 'lxml')
     ended = soup.find_all('div', class_ = 'not_active_notification')
     urls, more = set(), set()
+    others = soup.find_all('div', class_='sale_row')
+    for sale in others:
+        rate=sale.find('div', class_='rate').getText()
+        if rate == "100%":
+            link = sale.find('a', class_='sale_overlay_link').get('href')
+            more.add("https://itch.io"+link)
+            print("Found extra sale:", link)
     if ended:
         print(" Sale ended")
         return urls, more
