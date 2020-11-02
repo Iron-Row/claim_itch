@@ -124,6 +124,13 @@ def extract_from_itch_group(group_page):
     soup = BeautifulSoup(group_page, 'lxml')
     ended = soup.find_all('div', class_ = 'not_active_notification')
     urls, more = set(), set()
+    others = soup.find_all('div', class_='sale_row')
+    for sale in others:
+        rate=sale.find('div', class_='rate').getText()
+        if rate == "100%":
+            link = sale.find('a', class_='sale_overlay_link').get('href')
+            more.add("https://itch.io"+link)
+            print("Found extra sale:", link)
     if ended:
         print(" Sale ended")
         return urls, more
